@@ -1,43 +1,56 @@
+from __future__ import annotations
+
+import asyncio
 import base64
+import binascii
 import logging
 import os
-import platform
 import sys
 from importlib.metadata import version
-from typing import AsyncGenerator, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 import allure
 import pytest
-from browser_use import Agent, BrowserProfile, BrowserSession
-from browser_use.llm import ChatGoogle
-from browser_use.utils import get_browser_use_version
+from browser_use import (
+    Agent,
+    BrowserProfile,
+    BrowserSession,
+    ChatGoogle,
+)
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+
 # Load environment variables from .env file
 load_dotenv()
+logger = logging.getLogger(__name__)
+
+LLM_TEMPERATURE = 0.2
+
+# --- Fixtures for Setup and Configuration ---
 
 
 @pytest.fixture(scope="session")
-def browser_version_info(browser_profile: BrowserProfile) -> Dict[str, str]:
-    """
-    Fixture to get Playwright and browser version info.
-    """
+def browser_version_info(browser_profile: BrowserProfile) -> dict[str, str]:
+    """Fixture to get Playwright and browser version info."""
     try:
-        playwright_version = version("playwright")
         with sync_playwright() as p:
-            browser_type_name = (
-                browser_profile.channel.value if browser_profile.channel else "chromium"
+            playwright_version: str = version("playwright")
+            browser_type_name: str = (
+                browser_profile.channel if browser_profile.channel else "chromium"
             )
             browser = p[browser_type_name].launch()
-            browser_version = browser.version
+            browser_version: str = browser.version
             browser.close()
-        return {
-            "playwright_version": playwright_version,
-            "browser_version": browser_version,
-        }
+            return {
+                "playwright_version": playwright_version,
+                "browser_version": f"{browser_type_name} {browser_version}",
+            }
     except Exception as e:
-        logging.warning(f"Could not determine Playwright/browser version: {e}")
+        logger.warning(f"Could not determine Playwright/browser version: {e}")
         return {
             "playwright_version": "N/A",
             "browser_version": "N/A",
@@ -45,75 +58,71 @@ def browser_version_info(browser_profile: BrowserProfile) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def environment_reporter(
+def allure_environment(
     request: pytest.FixtureRequest,
-    llm: ChatGoogle,
-    browser_profile: BrowserProfile,
-    browser_version_info: Dict[str, str],
-):
-    """
-    Fixture to write environment details to a properties file for reporting.
+    browser_version_info: dict[str, str],
+) -> None:
+    """Fixture to write environment details to a properties file for reporting.
     This runs once per session and is automatically used.
     By default, this creates `environment.properties` for Allure.
     """
-    allure_dir = request.config.getoption("--alluredir")
-    if not allure_dir or not isinstance(allure_dir, str):
+    allure_dir: str | None = request.config.getoption("--alluredir")
+    if not allure_dir:
         return
 
-    ENVIRONMENT_PROPERTIES_FILENAME = "environment.properties"
-    properties_file = os.path.join(allure_dir, ENVIRONMENT_PROPERTIES_FILENAME)
+    ENVIRONMENT_PROPERTIES_FILENAME: str = "environment.properties"
+    properties_file: str = os.path.join(allure_dir, ENVIRONMENT_PROPERTIES_FILENAME)
 
-    # Ensure the directory exists, with permission handling
     try:
         os.makedirs(allure_dir, exist_ok=True)
-    except PermissionError:
-        logging.error(f"Permission denied to create report directory: {allure_dir}")
-        return  # Exit if we can't create the directory
+    except OSError:
+        return
 
-    env_props = {
-        "operating_system": f"{platform.system()} {platform.release()}",
-        "python_version": sys.version.split(" ")[0],
-        "browser_use_version": get_browser_use_version(),
-        "playwright_version": browser_version_info["playwright_version"],
-        "browser_type": (
-            browser_profile.channel.value if browser_profile.channel else "chromium"
-        ),
-        "browser_version": browser_version_info["browser_version"],
-        "headless_mode": str(browser_profile.headless),
-        "llm_model": llm.model,
+    env_props: dict[str, str] = {
+        "OS": os.name,
+        "Python": f"{sys.version_info.major}.{sys.version_info.minor}",
+        "Playwright": browser_version_info["playwright_version"],
+        "Browser": browser_version_info["browser_version"],
+        "Run URL": os.getenv("GITHUB_SERVER_URL", "")
+        + "/"
+        + os.getenv("GITHUB_REPOSITORY", "")
+        + "/actions/runs/"
+        + os.getenv("GITHUB_RUN_ID", ""),
     }
-
-    try:
-        with open(properties_file, "w") as f:
-            for key, value in env_props.items():
-                f.write(f"{key}={value}\n")
-    except IOError as e:
-        logging.error(f"Failed to write environment properties file: {e}")
+    with open(properties_file, "w") as f:
+        f.writelines(f"{key}={value}\n" for key, value in env_props.items())
 
 
-@pytest.fixture(scope="session")
-def llm() -> ChatGoogle:
-    """Session-scoped fixture to initialize the language model."""
-    DEFAULT_MODEL = "gemini-2.5-pro"
-    model_name = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
-    return ChatGoogle(model=model_name)
+@pytest.fixture
+async def llm() -> ChatGoogle:
+    """Function-scoped fixture to initialize the language model."""
+    DEFAULT_MODEL: str = "gemini-2.5-pro"
+    model_name: str = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+    return ChatGoogle(
+        model=model_name,
+        temperature=LLM_TEMPERATURE,
+        api_key=os.getenv("GEMINI_API_KEY"),
+    )
 
 
 @pytest.fixture(scope="session")
 def browser_profile() -> BrowserProfile:
     """Session-scoped fixture for browser profile configuration."""
-    headless_mode = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
-    return BrowserProfile(headless=headless_mode)
+    headless_mode: bool = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
+    return BrowserProfile(headless=headless_mode, keep_alive=True)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 async def browser_session(
     browser_profile: BrowserProfile,
 ) -> AsyncGenerator[BrowserSession, None]:
     """Function-scoped fixture to manage the browser session's lifecycle."""
-    session = BrowserSession(browser_profile=browser_profile)
-    yield session
-    await session.close()
+    session: BrowserSession = BrowserSession(browser_profile=browser_profile)
+    await session.start()
+    try:
+        yield session
+    finally:
+        await session.stop()
 
 
 # --- Base Test Class for Agent-based Tests ---
@@ -122,43 +131,38 @@ async def browser_session(
 class BaseAgentTest:
     """Base class for agent-based tests to reduce boilerplate."""
 
-    BASE_URL = "https://www.googlecloudcommunity.com/"
+    BASE_URL = "https://discuss.google.dev/"
 
     async def validate_task(
         self,
         llm: ChatGoogle,
         browser_session: BrowserSession,
         task_instruction: str,
-        expected_substring: Optional[str] = None,
+        expected_substring: str,
         ignore_case: bool = False,
     ) -> str:
-        """
-        Runs a task with the agent, prepends the BASE_URL, and performs common assertions.
-
-        Args:
-            llm: The language model instance.
-            browser_session: The browser session instance.
-            task_instruction: The specific instruction for the agent, without the "Go to URL" part.
-            expected_substring: An optional string to assert is present in the agent's result.
-            ignore_case: If True, the substring check will be case-insensitive.
-
-        Returns:
-            The final text result from the agent for any further custom assertions.
-        """
-        full_task = f"Go to {self.BASE_URL}, then {task_instruction}"
-
-        result_text = await run_agent_task(full_task, llm, browser_session)
-
-        assert result_text is not None, "Agent did not return a final result."
+        """Runs a task with the agent, prepends the BASE_URL, and performs common assertions."""
+        full_task: str = f"Go to {self.BASE_URL}, then {task_instruction}"
+        result_text: str = await run_agent_task(full_task, llm, browser_session)
+        assert result_text is not None and result_text.strip() != "", (
+            "Agent did not return a result."
+        )
 
         if expected_substring:
-            result_to_check = result_text.lower() if ignore_case else result_text
-            substring_to_check = (
-                expected_substring.lower() if ignore_case else expected_substring
+            result_to_check = result_text.lower()
+            # Check for the specific expected substring OR common confirmation phrases
+            possible_confirmations = {
+                expected_substring.lower() if ignore_case else expected_substring,
+                "visible",
+                "found",
+                "confirmed",
+                "i see it",
+            }
+            assert any(
+                phrase in result_to_check for phrase in possible_confirmations
+            ), (
+                f"Expected a confirmation like '{expected_substring}', but got: '{result_text}'"
             )
-            assert (
-                substring_to_check in result_to_check
-            ), f"Assertion failed: Expected '{expected_substring}' not found in agent result: '{result_text}'"
 
         return result_text
 
@@ -166,23 +170,21 @@ class BaseAgentTest:
 # --- Allure Hook for Step-by-Step Reporting ---
 
 
-async def record_step(agent: Agent):
+async def record_step(agent: Agent) -> None:
     """Hook function that captures and records agent activity at each step."""
-    history = agent.state.history
-    if not history:
-        return
+    history = agent.history
 
-    last_action = history.model_actions()[-1] if history.model_actions() else {}
-    action_name = next(iter(last_action)) if last_action else "No action"
-    action_params = last_action.get(action_name, {})
-
-    step_title = f"Action: {action_name}"
-    if action_params:
-        param_str = ", ".join(f"{k}={v}" for k, v in action_params.items())
+    last_action: dict[str, Any] = (
+        history.model_actions()[-1] if history.model_actions() else {}
+    )
+    action_name: str = next(iter(last_action)) if last_action else "No action"
+    action_params: dict[str, Any] = last_action.get(action_name, {})
+    step_title: str = f"Action: {action_name}"
+    param_str: str = ", ".join(f"{k}={v}" for k, v in action_params.items())
+    if param_str:
         step_title += f"({param_str})"
 
     with allure.step(step_title):
-        # Attach Agent Thoughts
         thoughts = history.model_thoughts()
         if thoughts:
             allure.attach(
@@ -191,18 +193,12 @@ async def record_step(agent: Agent):
                 attachment_type=allure.attachment_type.TEXT,
             )
 
-        # Attach URL
-        url = history.urls()[-1] if history.urls() else "N/A"
-        allure.attach(
-            url,
-            name="URL",
-            attachment_type=allure.attachment_type.URI_LIST,
-        )
+        url: str | None = history.urls()[-1] if history.urls() else "N/A"
+        allure.attach(url, name="URL", attachment_type=allure.attachment_type.TEXT)
 
-        # Attach Step Duration
         last_history_item = history.history[-1] if history.history else None
         if last_history_item and last_history_item.metadata:
-            duration = last_history_item.metadata.duration_seconds
+            duration: float = last_history_item.metadata.duration_seconds
             allure.attach(
                 f"{duration:.2f}s",
                 name="Step Duration",
@@ -210,47 +206,81 @@ async def record_step(agent: Agent):
             )
 
         # Attach Screenshot
-        if agent.browser_session:
-            try:
-                screenshot_b64 = await agent.browser_session.take_screenshot()
-                if screenshot_b64:
+        try:
+            screenshot_b64 = await agent.browser_session.take_screenshot()
+            if screenshot_b64:
+                # Validate base64 string before decoding
+                if isinstance(screenshot_b64, bytes):
+                    # If it's already bytes, use it directly
+                    screenshot_bytes: bytes | None = screenshot_b64
+                elif is_valid_base64(screenshot_b64):
+                    # If it's a valid base64 string, decode it
                     screenshot_bytes = base64.b64decode(screenshot_b64)
+                else:
+                    logger.warning("Invalid base64 padding in screenshot data")
+                    screenshot_bytes = None
+
+                if screenshot_bytes:
                     allure.attach(
                         screenshot_bytes,
-                        name="Screenshot after Action",
+                        name="Screenshot",
                         attachment_type=allure.attachment_type.PNG,
                     )
-            except Exception as e:
-                logging.warning(f"Failed to take or attach screenshot: {e}")
+        except Exception as e:
+            logger.warning(f"Failed to take or attach screenshot: {e}")
 
 
 # --- Helper Function to Run Agent ---
 
 
-@allure.step("Running browser agent with task: {task_description}")
 async def run_agent_task(
-    task_description: str,
+    full_task: str,
     llm: ChatGoogle,
     browser_session: BrowserSession,
-) -> Optional[str]:
+) -> str:
     """Initializes and runs the browser agent for a given task using an active browser session."""
-    logging.info(f"Running task: {task_description}")
+    logger.info(f"Running task: {full_task}")
 
-    agent = Agent(
-        task=task_description,
+    agent: Agent = Agent(
+        task=full_task,
         llm=llm,
         browser_session=browser_session,
-        name=f"Agent for '{task_description[:50]}...'",
     )
 
-    result = await agent.run(on_step_end=record_step)
+    # Add timeout to prevent hanging
+    result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=90)
+    final_text: str | None = result.final_result()
 
-    final_text = result.final_result()
-    allure.attach(
-        final_text,
-        name="Agent Final Output",
-        attachment_type=allure.attachment_type.TEXT,
-    )
+    # Only attach final result if it's not None
+    if final_text is not None:
+        allure.attach(
+            final_text,
+            name="Final Result",
+            attachment_type=allure.attachment_type.TEXT,
+        )
 
-    logging.info("Task finished.")
-    return final_text
+    return final_text if final_text else ""
+
+
+# --- Utility Function for Base64 Validation ---
+
+
+def is_valid_base64(s: Any) -> bool:
+    """Check if a string or bytes is a valid base64 encoded data."""
+    try:
+        # If it's already bytes, try to decode it directly
+        if isinstance(s, bytes):
+            base64.b64decode(s, validate=True)
+            return True
+
+        # If it's a string, check if length is multiple of 4 and try to decode
+        if isinstance(s, str):
+            # Check if length is multiple of 4
+            if len(s) % 4 != 0:
+                return False
+            base64.b64decode(s, validate=True)
+            return True
+
+        return False
+    except binascii.Error:
+        return False

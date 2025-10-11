@@ -78,7 +78,15 @@ For more information on how to use Allure with pytest, see the [official Allure 
     pip install -r requirements.txt
     ```
 
-3. **Set Up Environment Variables**:
+3. **Install Playwright Browsers**:
+
+    After installing the Python dependencies, you need to download the necessary browser binaries for Playwright. Run the following command:
+
+    ```bash
+    playwright install
+    ```
+
+4. **Set Up Environment Variables**:
 
     To get started, create a `.env` file in the root of the project by copying the provided template:
 
@@ -86,10 +94,10 @@ For more information on how to use Allure with pytest, see the [official Allure 
     cp .env.example .env
     ```
 
-    Next, open the `.env` file and add your `GOOGLE_API_KEY`. This file is pre-configured with sensible defaults, but you can customize them to fit your needs.
+    Next, open the `.env` file and add your `GEMINI_API_KEY`. This file is pre-configured with sensible defaults, but you can customize them to fit your needs.
 
     **Required Variables**:
-    * `GOOGLE_API_KEY`: Your Google API key for accessing the Gemini model.
+    * `GEMINI_API_KEY`: Your Google API key for accessing the Gemini model.
 
     **Optional Variables**:
     * `GEMINI_MODEL`: The specific Gemini model you want to use (e.g., `gemini-2.5-pro`). For a list of available models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
