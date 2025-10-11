@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import binascii
 import logging
 import os
 import sys
@@ -22,6 +23,7 @@ from playwright.sync_api import sync_playwright
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
+
 # Load environment variables from .env file
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -34,17 +36,24 @@ LLM_TEMPERATURE = 0.2
 @pytest.fixture(scope="session")
 def browser_version_info(browser_profile: BrowserProfile) -> dict[str, str]:
     """Fixture to get Playwright and browser version info."""
-    with sync_playwright() as p:
-        playwright_version: str = version("playwright")
-        browser_type_name: str = (
-            browser_profile.channel if browser_profile.channel else "chromium"
-        )
-        browser = p[browser_type_name].launch()
-        browser_version: str = browser.version
-        browser.close()
+    try:
+        with sync_playwright() as p:
+            playwright_version: str = version("playwright")
+            browser_type_name: str = (
+                browser_profile.channel if browser_profile.channel else "chromium"
+            )
+            browser = p[browser_type_name].launch()
+            browser_version: str = browser.version
+            browser.close()
+            return {
+                "playwright_version": playwright_version,
+                "browser_version": f"{browser_type_name} {browser_version}",
+            }
+    except Exception as e:
+        logger.warning(f"Could not determine Playwright/browser version: {e}")
         return {
-            "playwright_version": playwright_version,
-            "browser_version": f"{browser_type_name} {browser_version}",
+            "playwright_version": "N/A",
+            "browser_version": "N/A",
         }
 
 
@@ -85,16 +94,15 @@ def allure_environment(
 
 
 @pytest.fixture
-async def llm() -> AsyncGenerator[ChatGoogle, None]:
+async def llm() -> ChatGoogle:
     """Function-scoped fixture to initialize the language model."""
     DEFAULT_MODEL: str = "gemini-2.5-pro"
     model_name: str = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
-    google_llm: ChatGoogle = ChatGoogle(
+    return ChatGoogle(
         model=model_name,
         temperature=LLM_TEMPERATURE,
         api_key=os.getenv("GEMINI_API_KEY"),
     )
-    return google_llm
 
 
 @pytest.fixture(scope="session")
@@ -274,5 +282,5 @@ def is_valid_base64(s: Any) -> bool:
             return True
 
         return False
-    except Exception:
+    except binascii.Error:
         return False
