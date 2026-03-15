@@ -29,6 +29,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 LLM_TEMPERATURE = 0.2
+DEFAULT_MODEL = "gemini-3-flash-preview"
 
 # --- Fixtures for Setup and Configuration ---
 
@@ -93,10 +94,10 @@ def allure_environment(
         f.writelines(f"{key}={value}\n" for key, value in env_props.items())
 
 
+
 @pytest.fixture
 async def llm() -> ChatGoogle:
     """Function-scoped fixture to initialize the language model."""
-    DEFAULT_MODEL: str = "gemini-2.5-pro"
     model_name: str = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     return ChatGoogle(
         model=model_name,
