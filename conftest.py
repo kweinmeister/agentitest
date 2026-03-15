@@ -93,6 +93,7 @@ def allure_environment(
         f.writelines(f"{key}={value}\n" for key, value in env_props.items())
 
 
+
 @pytest.fixture
 async def llm() -> ChatGoogle:
     """Function-scoped fixture to initialize the language model."""
