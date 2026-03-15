@@ -7,3 +7,10 @@ updates:
     labels:
       - "dependencies"
       - "github_actions"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "python"
