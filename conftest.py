@@ -96,7 +96,7 @@ def allure_environment(
 @pytest.fixture
 async def llm() -> ChatGoogle:
     """Function-scoped fixture to initialize the language model."""
-    DEFAULT_MODEL: str = "gemini-2.5-pro"
+    DEFAULT_MODEL: str = "gemini-3-flash-preview"
     model_name: str = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     return ChatGoogle(
         model=model_name,
