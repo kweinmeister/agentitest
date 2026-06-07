@@ -1,4 +1,4 @@
-allure_pytest==2.16.0
+allure_pytest==2.15.3
 browser_use[all]==0.12.2
 playwright==1.60.0
 pytest==9.0.3
