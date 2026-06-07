@@ -29,7 +29,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 LLM_TEMPERATURE = 0.2
-DEFAULT_MODEL = "gemini-3-flash-preview"
+DEFAULT_MODEL = "gemini-3.5-flash"
 
 # --- Fixtures for Setup and Configuration ---
 

@@ -100,7 +100,7 @@ For more information on how to use Allure with pytest, see the [official Allure 
     * `GEMINI_API_KEY`: Your Google API key for accessing the Gemini model.
 
     **Optional Variables**:
-    * `GEMINI_MODEL`: The specific Gemini model you want to use (e.g., `gemini-2.5-pro`). For a list of available models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
+    * `GEMINI_MODEL`: The specific Gemini model you want to use (e.g., `gemini-3.5-flash`). For a list of available models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
     * `HEADLESS`: Set to `true` to run in headless mode (without a visible browser UI) or `false` to run with a visible UI.
 
 ## 🧪 Running the Tests
