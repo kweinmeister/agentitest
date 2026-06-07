@@ -44,4 +44,5 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HEADLESS: "true"
+          BROWSER_USE_DISABLE_EXTENSIONS: "true"
         run: pytest

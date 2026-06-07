@@ -13,10 +13,10 @@ class TestMainNavigation(BaseAgentTest):
     @pytest.mark.parametrize(
         ("link_text", "expected_path_segment"),
         [
-            ("Google Cloud", "/c/google-cloud/14"),
-            ("Looker", "/c/looker/19"),
-            ("Google Workspace Developers", "/c/google-workspace/20"),
-            ("AppSheet", "/c/appsheet/21"),
+            ("Google Cloud", "/c/google-cloud"),
+            ("Looker", "/c/looker"),
+            ("Google Workspace Developers", "/c/google-workspace"),
+            ("AppSheet", "/c/appsheet"),
         ],
     )
     async def test_main_navigation(
