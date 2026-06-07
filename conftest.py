@@ -249,7 +249,7 @@ async def run_agent_task(
     )
 
     # Add timeout to prevent hanging
-    result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=90)
+    result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=150)
     final_text: str | None = result.final_result()
 
     # Only attach final result if it's not None
