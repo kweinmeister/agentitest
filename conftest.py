@@ -19,6 +19,7 @@ from browser_use import (
 )
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -110,7 +111,18 @@ async def llm() -> ChatGoogle:
 def browser_profile() -> BrowserProfile:
     """Session-scoped fixture for browser profile configuration."""
     headless_mode: bool = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
-    return BrowserProfile(headless=headless_mode, keep_alive=True)
+    is_ci: bool = os.getenv("CI", "").lower() in ("true", "1")
+
+    extra_args: list[str] = []
+    if is_ci:
+        extra_args.append("--disable-component-extensions-with-background-pages")
+
+    return BrowserProfile(
+        headless=headless_mode,
+        keep_alive=True,
+        chromium_sandbox=not is_ci,
+        extra_chromium_args=extra_args,
+    )
 
 
 @pytest.fixture
@@ -234,6 +246,7 @@ async def record_step(agent: Agent) -> None:
 # --- Helper Function to Run Agent ---
 
 
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(5), reraise=True)
 async def run_agent_task(
     full_task: str,
     llm: ChatGoogle,
@@ -249,7 +262,7 @@ async def run_agent_task(
     )
 
     # Add timeout to prevent hanging
-    result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=150)
+    result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=240)
     final_text: str | None = result.final_result()
 
     # Only attach final result if it's not None

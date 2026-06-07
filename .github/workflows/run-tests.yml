@@ -13,6 +13,7 @@ permissions:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -38,11 +39,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Install Playwright browsers
-        run: playwright install --with-deps
+        run: playwright install chromium --with-deps
 
       - name: Run pytest
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HEADLESS: "true"
           BROWSER_USE_DISABLE_EXTENSIONS: "true"
+          TIMEOUT_BrowserStartEvent: "120"
+          TIMEOUT_BrowserLaunchEvent: "120"
         run: pytest
