@@ -110,7 +110,14 @@ async def llm() -> ChatGoogle:
 def browser_profile() -> BrowserProfile:
     """Session-scoped fixture for browser profile configuration."""
     headless_mode: bool = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
-    return BrowserProfile(headless=headless_mode, keep_alive=True)
+    return BrowserProfile(
+        headless=headless_mode,
+        keep_alive=True,
+        chromium_sandbox=False,
+        extra_chromium_args=[
+            "--disable-component-extensions-with-background-pages",
+        ],
+    )
 
 
 @pytest.fixture
