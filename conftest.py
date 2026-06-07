@@ -111,13 +111,17 @@ async def llm() -> ChatGoogle:
 def browser_profile() -> BrowserProfile:
     """Session-scoped fixture for browser profile configuration."""
     headless_mode: bool = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
+    is_ci: bool = os.getenv("CI", "").lower() in ("true", "1")
+
+    extra_args: list[str] = []
+    if is_ci:
+        extra_args.append("--disable-component-extensions-with-background-pages")
+
     return BrowserProfile(
         headless=headless_mode,
         keep_alive=True,
-        chromium_sandbox=False,
-        extra_chromium_args=[
-            "--disable-component-extensions-with-background-pages",
-        ],
+        chromium_sandbox=not is_ci,
+        extra_chromium_args=extra_args,
     )
 
 
