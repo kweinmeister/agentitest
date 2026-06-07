@@ -45,5 +45,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HEADLESS: "true"
           BROWSER_USE_DISABLE_EXTENSIONS: "true"
-          TIMEOUT_BrowserLaunchEvent: "90"
+          TIMEOUT_BrowserStartEvent: "120"
+          TIMEOUT_BrowserLaunchEvent: "120"
         run: pytest
