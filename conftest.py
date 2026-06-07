@@ -110,7 +110,8 @@ async def llm() -> ChatGoogle:
 def browser_profile() -> BrowserProfile:
     """Session-scoped fixture for browser profile configuration."""
     headless_mode: bool = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
-    return BrowserProfile(headless=headless_mode, keep_alive=True)
+    # Set keep_alive to False to prevent event loop deadlocks between tests
+    return BrowserProfile(headless=headless_mode, keep_alive=False)
 
 
 @pytest.fixture
