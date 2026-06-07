@@ -72,7 +72,7 @@ class TestSearch(BaseAgentTest):
     ) -> None:
         """Tests searching for a term and verifying results are shown."""
         # The agent can be inefficient. This prompt guides it to the most reliable search method.
-        task: str = f"click the search icon, then type '{term}' into the search bar that appears, and then press Enter. Finally, wait for the page to load and confirm that text containing 'results for {term}' is visible. If it is, return 'search_results_visible'."
+        task: str = f"click the search icon, then type '{term}' into the search input of the search overlay that appears and press Enter. Wait for the results to load and return 'search_results_visible'."
         expected_confirmation: str = "search_results_visible"
         await self.validate_task(
             llm,
@@ -91,7 +91,7 @@ class TestSearch(BaseAgentTest):
     ) -> None:
         """Tests searching for a term that should not have results."""
         term: str = "a_very_unlikely_search_term_xyz"
-        task: str = f"click the search icon, then type '{term}' into the search bar that appears, and then press Enter. Finally, confirm that a 'no results' message is displayed. If it is, return '{self.EXPECTED_NO_RESULTS}'."
+        task: str = f"click the search icon, then type '{term}' into the search input of the search overlay that appears and press Enter. Finally, confirm that a 'no results' message is displayed. If it is, return '{self.EXPECTED_NO_RESULTS}'."
         await self.validate_task(
             llm,
             browser_session,
