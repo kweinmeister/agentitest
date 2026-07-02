@@ -1,5 +1,5 @@
 allure_pytest==2.16.0
-browser_use[all]==0.12.9
+browser_use[all]==0.13.1
 playwright==1.60.0
 pytest==9.0.3
 pytest_asyncio==1.4.0
