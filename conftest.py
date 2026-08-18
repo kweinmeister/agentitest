@@ -29,8 +29,7 @@ if TYPE_CHECKING:
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-LLM_TEMPERATURE = 0.2
-DEFAULT_MODEL = "gemini-3.5-flash"
+DEFAULT_MODEL = "gemini-3.7-flash"
 
 # --- Fixtures for Setup and Configuration ---
 
@@ -102,7 +101,6 @@ async def llm() -> ChatGoogle:
     model_name: str = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     return ChatGoogle(
         model=model_name,
-        temperature=LLM_TEMPERATURE,
         api_key=os.getenv("GEMINI_API_KEY"),
     )
 

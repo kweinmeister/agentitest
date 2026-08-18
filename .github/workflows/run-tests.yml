@@ -44,6 +44,9 @@ jobs:
       - name: Run pytest
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Pin CI a tier below the default model to keep these agentic browser
+          # runs cheap. The default stays gemini-3.7-flash for local runs.
+          GEMINI_MODEL: "gemini-3.5-flash-lite"
           HEADLESS: "true"
           BROWSER_USE_DISABLE_EXTENSIONS: "true"
           TIMEOUT_BrowserStartEvent: "120"
