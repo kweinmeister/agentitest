@@ -1,0 +1,33 @@
+[project]
+name = "agentitest"
+version = "0.1.0"
+description = "Agentic Test Automation"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "allure-pytest==2.16.0",
+    "browser-use[all]==0.13.8",
+    "playwright==1.62.0",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "python-dotenv==1.2.2",
+    "tenacity==9.1.4",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.6",
+    "ty>=0.0.78",
+]
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+

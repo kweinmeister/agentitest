@@ -27,7 +27,10 @@ class TestMainNavigation(BaseAgentTest):
         expected_path_segment: str,
     ) -> None:
         """Tests navigation to main sections of the website."""
-        task: str = f"click on the '{link_text}' link in the main navigation, and then return the final URL of the page."
+        task: str = (
+            f"click on the '{link_text}' link in the main navigation, "
+            "and then return the final URL of the page."
+        )
         await self.validate_task(llm, browser_session, task, expected_path_segment)
 
 
@@ -45,7 +48,10 @@ class TestHomePageContent(BaseAgentTest):
         browser_session: BrowserSession,
     ) -> None:
         """Tests that the main welcome heading and CTA buttons are visible."""
-        task: str = f"confirm that the 'Google Developer Program forums' heading is visible on the page. Return '{self.EXPECTED_ELEMENTS_VISIBLE}' if it is."
+        task: str = (
+            "confirm that the 'Google Developer Program forums' heading is visible on the page. "
+            f"Return '{self.EXPECTED_ELEMENTS_VISIBLE}' if it is."
+        )
         await self.validate_task(
             llm,
             browser_session,
@@ -72,7 +78,11 @@ class TestSearch(BaseAgentTest):
     ) -> None:
         """Tests searching for a term and verifying results are shown."""
         # The agent can be inefficient. This prompt guides it to the most reliable search method.
-        task: str = f"click the search icon, then type '{term}' into the search input of the search overlay that appears and press Enter. Wait for the results to load and return 'search_results_visible'."
+        task: str = (
+            f"click the search icon, then type '{term}' into the search input of the search "
+            "overlay that appears and press Enter. Wait for the results to load and return "
+            "'search_results_visible'."
+        )
         expected_confirmation: str = "search_results_visible"
         await self.validate_task(
             llm,
@@ -91,7 +101,11 @@ class TestSearch(BaseAgentTest):
     ) -> None:
         """Tests searching for a term that should not have results."""
         term: str = "a_very_unlikely_search_term_xyz"
-        task: str = f"click the search icon, then type '{term}' into the search input of the search overlay that appears and press Enter. Finally, confirm that a 'no results' message is displayed. If it is, return '{self.EXPECTED_NO_RESULTS}'."
+        task: str = (
+            f"click the search icon, then type '{term}' into the search input of the search "
+            "overlay that appears and press Enter. Finally, confirm that a 'no results' "
+            f"message is displayed. If it is, return '{self.EXPECTED_NO_RESULTS}'."
+        )
         await self.validate_task(
             llm,
             browser_session,

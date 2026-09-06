@@ -94,7 +94,6 @@ def allure_environment(
         f.writelines(f"{key}={value}\n" for key, value in env_props.items())
 
 
-
 @pytest.fixture
 async def llm() -> ChatGoogle:
     """Function-scoped fixture to initialize the language model."""
@@ -119,14 +118,14 @@ def browser_profile() -> BrowserProfile:
         headless=headless_mode,
         keep_alive=True,
         chromium_sandbox=not is_ci,
-        extra_chromium_args=extra_args,
+        args=extra_args,
     )
 
 
 @pytest.fixture
 async def browser_session(
     browser_profile: BrowserProfile,
-) -> AsyncGenerator[BrowserSession, None]:
+) -> AsyncGenerator[BrowserSession]:
     """Function-scoped fixture to manage the browser session's lifecycle."""
     session: BrowserSession = BrowserSession(browser_profile=browser_profile)
     await session.start()
@@ -169,9 +168,7 @@ class BaseAgentTest:
                 "confirmed",
                 "i see it",
             }
-            assert any(
-                phrase in result_to_check for phrase in possible_confirmations
-            ), (
+            assert any(phrase in result_to_check for phrase in possible_confirmations), (
                 f"Expected a confirmation like '{expected_substring}', but got: '{result_text}'"
             )
 
@@ -185,9 +182,7 @@ async def record_step(agent: Agent) -> None:
     """Hook function that captures and records agent activity at each step."""
     history = agent.history
 
-    last_action: dict[str, Any] = (
-        history.model_actions()[-1] if history.model_actions() else {}
-    )
+    last_action: dict[str, Any] = history.model_actions()[-1] if history.model_actions() else {}
     action_name: str = next(iter(last_action)) if last_action else "No action"
     action_params: dict[str, Any] = last_action.get(action_name, {})
     step_title: str = f"Action: {action_name}"
