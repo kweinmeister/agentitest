@@ -65,28 +65,23 @@ For more information on how to use Allure with pytest, see the [official Allure 
 
 ## 🚀 Setup and Installation
 
-1. **Create a Virtual Environment**:
+1. **Install Dependencies**:
+
+    Install dependencies and create a virtual environment using `uv`:
 
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    uv sync
     ```
 
-2. **Install Dependencies**:
+2. **Install Playwright Browsers**:
+
+    After installing the Python dependencies, download the necessary browser binaries for Playwright:
 
     ```bash
-    pip install -r requirements.txt
+    uv run playwright install chromium
     ```
 
-3. **Install Playwright Browsers**:
-
-    After installing the Python dependencies, you need to download the necessary browser binaries for Playwright. Run the following command:
-
-    ```bash
-    playwright install
-    ```
-
-4. **Set Up Environment Variables**:
+3. **Set Up Environment Variables**:
 
     To get started, create a `.env` file in the root of the project by copying the provided template:
 
@@ -100,16 +95,18 @@ For more information on how to use Allure with pytest, see the [official Allure 
     * `GEMINI_API_KEY`: Your Google API key for accessing the Gemini model.
 
     **Optional Variables**:
-    * `GEMINI_MODEL`: The specific Gemini model you want to use (e.g., `gemini-3.7-flash`). For a list of available models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
+    * `GEMINI_MODEL`: The specific Gemini model you want to use (e.g., `gemini-3.8-flash`). For a list of available models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
     * `HEADLESS`: Set to `true` to run in headless mode (without a visible browser UI) or `false` to run with a visible UI.
     * `BROWSER_USE_DISABLE_EXTENSIONS`: Set to `true` to disable default extensions loaded by `browser-use` (e.g., uBlock Origin). This is highly recommended in headless CI environments to prevent startup timeouts/deadlocks.
 
 ## 🧪 Running the Tests
 
-Once your environment is configured, you can run the tests and generate the Allure report data with a single command:
+Once your environment is configured, you can run linting, type-checking, and tests:
 
 ```bash
-pytest
+uv run ruff check
+uv run ty check
+uv run pytest
 ```
 
 This will create an `allure-results` directory containing the data for your test report. The output directory is specified by the `--alluredir` parameter in `pytest.ini`, which is required for Allure to function correctly. For more details, see the [Allure pytest documentation on `alluredir`](https://allurereport.org/docs/pytest-configuration/#alluredir-%E2%9F%A8directory%E2%9F%A9).

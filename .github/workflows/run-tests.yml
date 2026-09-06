@@ -19,27 +19,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
           python-version: '3.13'
-          cache: 'pip'
 
       - name: Cache Playwright browsers
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
 
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: uv sync
 
       - name: Install Playwright browsers
-        run: playwright install chromium --with-deps
+        run: uv run playwright install chromium --with-deps
+
+      - name: Lint with Ruff
+        run: uv run ruff check
+
+      - name: Type check with ty
+        run: uv run ty check
 
       - name: Run pytest
         env:
@@ -51,4 +59,4 @@ jobs:
           BROWSER_USE_DISABLE_EXTENSIONS: "true"
           TIMEOUT_BrowserStartEvent: "120"
           TIMEOUT_BrowserLaunchEvent: "120"
-        run: pytest
+        run: uv run pytest

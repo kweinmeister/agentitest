@@ -119,14 +119,14 @@ def browser_profile() -> BrowserProfile:
         headless=headless_mode,
         keep_alive=True,
         chromium_sandbox=not is_ci,
-        extra_chromium_args=extra_args,
+        args=extra_args,
     )
 
 
 @pytest.fixture
 async def browser_session(
     browser_profile: BrowserProfile,
-) -> AsyncGenerator[BrowserSession, None]:
+) -> AsyncGenerator[BrowserSession]:
     """Function-scoped fixture to manage the browser session's lifecycle."""
     session: BrowserSession = BrowserSession(browser_profile=browser_profile)
     await session.start()
