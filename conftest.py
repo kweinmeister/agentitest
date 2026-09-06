@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "gemini-3.7-flash"
+DEFAULT_MODEL = "gemini-3.8-flash"
 
 # --- Fixtures for Setup and Configuration ---
 
