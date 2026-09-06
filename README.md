@@ -39,6 +39,7 @@ import allure
 import pytest
 from conftest import BaseAgentTest
 
+
 @allure.feature("Login Functionality")
 class TestLogin(BaseAgentTest):
     """Tests for the website's login functionality."""

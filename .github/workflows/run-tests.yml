@@ -46,6 +46,9 @@ jobs:
       - name: Lint with Ruff
         run: uv run ruff check
 
+      - name: Format with Ruff
+        run: uv run ruff format --check
+
       - name: Type check with ty
         run: uv run ty check
 
