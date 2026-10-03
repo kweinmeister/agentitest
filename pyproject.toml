@@ -5,7 +5,7 @@ description = "Agentic Test Automation"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "allure-pytest==2.16.0",
+    "allure-pytest==2.16.2",
     "browser-use[all]==0.13.10",
     "playwright==1.63.0",
     "pytest==9.1.1",
