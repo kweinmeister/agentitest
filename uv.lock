@@ -29,7 +29,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "allure-pytest", specifier = "==2.16.2" },
-    { name = "browser-use", extras = ["all"], specifier = "==0.13.10" },
+    { name = "browser-use", extras = ["all"], specifier = "==0.13.11" },
     { name = "playwright", specifier = "==1.63.0" },
     { name = "pytest", specifier = "==9.1.1" },
     { name = "pytest-asyncio", specifier = "==1.4.0" },
@@ -312,7 +312,7 @@ wheels = [
 
 [[package]]
 name = "browser-use"
-version = "0.13.10"
+version = "0.13.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -353,9 +353,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "uuid7" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/84/03de275afbf11ae3b70dd01a799b90208968af581b98caa5cf5d04e410e5/browser_use-0.13.10.tar.gz", hash = "sha256:f0e97fcad3319bc7a19ef7bb27eadf2e0824def0a916fd1988557dab9267cb17", size = 624279, upload-time = "2026-09-04T04:07:07.22Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/d5/7020c94801f73d8bc650f01418b35a8191a0cf6e6c6af29fda9d200ac713/browser_use-0.13.11.tar.gz", hash = "sha256:abec8573ebc9f8801b688c38b5988d90bb030d1448b8760f37f85f68a0ed7812", size = 644128, upload-time = "2026-10-07T04:24:43.464Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/8f/51217ec63b3872fcc2cfd463f6501727e8f0dedfb33e4598a5e86ce66702/browser_use-0.13.10-py3-none-any.whl", hash = "sha256:66eb20153094f21728bc0110ada17c03a0c475df2374985d6b47e349cbd47705", size = 731335, upload-time = "2026-09-04T04:07:05.423Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/e6/8fb8ce81894afcc7626837232a4d284843d1c1fb4fd757aa00c54ce40d8e/browser_use-0.13.11-py3-none-any.whl", hash = "sha256:50b0d16efc44215f99ed1c9197f05e2519bb79fa1501eed7371aff450cc56045", size = 753512, upload-time = "2026-10-07T04:24:41.659Z" },
 ]
 
 [package.optional-dependencies]
