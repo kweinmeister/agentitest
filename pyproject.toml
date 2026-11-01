@@ -9,7 +9,7 @@ dependencies = [
     "browser-use[all]==0.13.10",
     "playwright==1.63.0",
     "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
+    "pytest-asyncio==1.4.1",
     "python-dotenv==1.2.2",
     "tenacity==9.1.4",
 ]
