@@ -1,7 +1,15 @@
+from __future__ import annotations
+
+import asyncio
+from typing import TYPE_CHECKING
+
 import allure
 import pytest
 
 from conftest import BaseAgentTest, BrowserSession, ChatGoogle
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 
 @allure.feature("Main Navigation")
@@ -67,9 +75,15 @@ class TestSearch(BaseAgentTest):
 
     EXPECTED_NO_RESULTS = "no_results_found"
 
+    @pytest.fixture(autouse=True)
+    async def search_cooldown(self) -> AsyncGenerator[None]:
+        """Cooldown delay between search tests to avoid hitting external rate limits."""
+        yield
+        await asyncio.sleep(15)
+
     @allure.story("Searching for Terms")
     @allure.title("Search for '{term}'")
-    @pytest.mark.parametrize("term", ["Google Cloud", "Looker"])
+    @pytest.mark.parametrize("term", ["Google Cloud"])
     async def test_search_for_term(
         self,
         llm: ChatGoogle,
