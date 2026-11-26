@@ -8,8 +8,8 @@ dependencies = [
     "allure-pytest==2.16.2",
     "browser-use[all]==0.13.14",
     "playwright==1.63.0",
-    "pytest==9.1.1",
-    "pytest-asyncio==1.4.1",
+    "pytest==9.2.0",
+    "pytest-asyncio==1.5.0",
     "python-dotenv==1.2.2",
     "tenacity==9.1.4",
 ]

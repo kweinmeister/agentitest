@@ -19,7 +19,7 @@ from browser_use import (
 )
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -158,6 +158,13 @@ class BaseAgentTest:
             "Agent did not return a result."
         )
 
+        if (
+            "too many times" in result_text.lower()
+            or "rate-limiting" in result_text.lower()
+            or "rate limit" in result_text.lower()
+        ):
+            pytest.skip("External rate limit encountered on discuss.google.dev")
+
         if expected_substring:
             result_to_check = result_text.lower()
             # Check for the specific expected substring OR common confirmation phrases
@@ -239,7 +246,11 @@ async def record_step(agent: Agent) -> None:
 # --- Helper Function to Run Agent ---
 
 
-@retry(stop=stop_after_attempt(2), wait=wait_fixed(5), reraise=True)
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=2, min=15, max=60),
+    reraise=True,
+)
 async def run_agent_task(
     full_task: str,
     llm: ChatGoogle,
